@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MOCK_SONGS, MOCK_PLAYLISTS } from '../constants';
 import { Song } from '../types';
+import { useAudioAutoDetection } from '../hooks/useAudioAutoDetection';
+import AutoDetectionToast from './AutoDetectionToast';
 
 interface LibraryViewProps {
   onSongSelect: (song: Song) => void;
@@ -9,14 +11,56 @@ interface LibraryViewProps {
 }
 
 const LibraryView: React.FC<LibraryViewProps> = ({ onSongSelect, onOpenPlaylist }) => {
+  const [autoDetectEnabled, setAutoDetectEnabled] = useState(false);
+  const [detectedSong, setDetectedSong] = useState<{ title: string; artist: string } | null>(null);
+
+  const { isListening } = useAudioAutoDetection(autoDetectEnabled, (result) => {
+    setDetectedSong(result);
+  });
+
+  const handleToastClick = () => {
+    if (detectedSong) {
+      // Find matching song in library or simulate selection
+      const match = MOCK_SONGS.find(s => 
+        s.title.toLowerCase().includes(detectedSong.title.toLowerCase())
+      ) || MOCK_SONGS[0];
+      onSongSelect(match);
+      setDetectedSong(null);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full pb-32">
+      {detectedSong && (
+        <AutoDetectionToast 
+          song={detectedSong} 
+          onDismiss={() => setDetectedSong(null)} 
+          onSelect={handleToastClick}
+        />
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-20 flex items-center justify-between bg-background-dark/95 backdrop-blur-md px-6 py-6 transition-colors">
         <h1 className="text-3xl font-bold leading-tight tracking-tight flex-1">My Library</h1>
-        <button className="flex items-center justify-center rounded-full p-2 hover:bg-surface-dark transition-colors">
-          <span className="text-primary text-base font-bold leading-normal tracking-wide shrink-0">Edit</span>
-        </button>
+        
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setAutoDetectEnabled(!autoDetectEnabled)}
+            className={`relative size-10 rounded-full flex items-center justify-center transition-all ${autoDetectEnabled ? 'bg-primary text-white shadow-[0_0_15px_rgba(236,19,236,0.5)]' : 'bg-surface-dark text-gray-500 border border-white/5'}`}
+            title="Toggle Continuous Auto-Detection"
+          >
+            <span className={`material-symbols-outlined ${isListening ? 'animate-pulse' : ''}`}>
+              {autoDetectEnabled ? 'sensors' : 'sensors_off'}
+            </span>
+            {isListening && (
+              <span className="absolute inset-0 rounded-full border border-primary animate-ping opacity-50"></span>
+            )}
+          </button>
+          
+          <button className="flex items-center justify-center rounded-full p-2 hover:bg-surface-dark transition-colors">
+            <span className="text-primary text-base font-bold leading-normal tracking-wide shrink-0">Edit</span>
+          </button>
+        </div>
       </header>
 
       {/* SearchBar Placeholder */}

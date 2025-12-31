@@ -54,7 +54,7 @@ export const identifyAudio = async (base64Audio: string, mimeType: string) => {
             }
           },
           {
-            text: "Identify the song in this audio recording. Provide the title and artist. If you cannot identify it, return 'Unknown' for both fields. Return as JSON."
+            text: "Identify the song in this ambient audio clip. It may have background noise. Look for melody patterns. Return the most likely song title and artist. If you are less than 60% certain, return 'Unknown'. Return as JSON."
           }
         ]
       }
@@ -69,7 +69,7 @@ export const identifyAudio = async (base64Audio: string, mimeType: string) => {
           genre: { type: Type.STRING },
           confidence: { type: Type.NUMBER, description: "Confidence score from 0 to 1" }
         },
-        required: ["title", "artist"]
+        required: ["title", "artist", "confidence"]
       }
     }
   });

@@ -32,6 +32,24 @@ const SettingsView: React.FC = () => {
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none"></div>
         </div>
 
+        {/* AI Features */}
+        <section>
+          <h3 className="text-slate-500 text-xs font-bold tracking-widest px-2 pb-3 uppercase">AI Intelligence</h3>
+          <div className="rounded-3xl bg-surface-dark overflow-hidden ring-1 ring-white/5">
+            <ToggleItem 
+              title="Continuous Audio Recognition" 
+              subtitle="Automatically identify ambient music while app is open" 
+              icon="sensors" 
+            />
+            <ToggleItem 
+              title="Smart Insights" 
+              subtitle="Show fun facts about music while searching" 
+              icon="rocket_launch" 
+              defaultChecked 
+            />
+          </div>
+        </section>
+
         {/* Audio Config */}
         <section>
           <h3 className="text-slate-500 text-xs font-bold tracking-widest px-2 pb-3 uppercase">Audio Configuration</h3>
