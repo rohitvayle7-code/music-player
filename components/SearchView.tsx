@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Song } from '../types';
 import { MOCK_SONGS } from '../constants';
 import { searchMusicInsights } from '../services/geminiService';
+import IdentifySongModal from './IdentifySongModal';
 
 interface SearchViewProps {
   onSongSelect: (song: Song) => void;
@@ -12,6 +13,7 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
   const [query, setQuery] = useState('');
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isIdentifying, setIsIdentifying] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,11 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
     }
   };
 
+  const handleIdentifyResult = (result: { title: string; artist: string }) => {
+    setQuery(`${result.title} ${result.artist}`);
+    setInsight(`Identified via Audio: This sounds like "${result.title}" by ${result.artist}. Great track!`);
+  };
+
   const filteredSongs = MOCK_SONGS.filter(s => 
     s.title.toLowerCase().includes(query.toLowerCase()) || 
     s.artist.toLowerCase().includes(query.toLowerCase())
@@ -35,6 +42,13 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
 
   return (
     <div className="flex flex-col h-full w-full px-6 pb-32">
+      {isIdentifying && (
+        <IdentifySongModal 
+          onClose={() => setIsIdentifying(false)} 
+          onResult={handleIdentifyResult}
+        />
+      )}
+
       <header className="flex items-center pt-8 pb-4 justify-between shrink-0">
         <h2 className="text-3xl font-bold leading-tight tracking-tight flex-1">Search</h2>
         <div className="size-10 rounded-full overflow-hidden border-2 border-primary/20">
@@ -42,8 +56,8 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
         </div>
       </header>
 
-      <form onSubmit={handleSearch} className="pb-4 shrink-0">
-        <div className="flex w-full items-center rounded-full h-12 bg-surface-dark border border-white/5 focus-within:border-primary transition-colors duration-200">
+      <form onSubmit={handleSearch} className="pb-4 shrink-0 flex gap-2">
+        <div className="flex flex-1 items-center rounded-full h-12 bg-surface-dark border border-white/5 focus-within:border-primary transition-colors duration-200">
           <button type="submit" className="text-primary/70 flex items-center justify-center pl-4 pr-2">
             <span className="material-symbols-outlined">search</span>
           </button>
@@ -53,10 +67,15 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <div className="pr-4 text-white/40">
-            <span className="material-symbols-outlined text-[20px]">mic</span>
-          </div>
         </div>
+        <button 
+          type="button"
+          onClick={() => setIsIdentifying(true)}
+          className="flex-none size-12 rounded-full bg-primary flex items-center justify-center text-white shadow-[0_0_15px_rgba(236,19,236,0.3)] hover:scale-105 active:scale-95 transition-all"
+          title="Identify song from ambient audio"
+        >
+          <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>graphic_eq</span>
+        </button>
       </form>
 
       {/* AI Insight Box */}
@@ -106,7 +125,16 @@ const SearchView: React.FC<SearchViewProps> = ({ onSongSelect }) => {
                 <span className="material-symbols-outlined text-white/30">more_vert</span>
               </div>
             )) : (
-              <p className="text-gray-500 italic py-10 text-center">No matches found. Try a broader search.</p>
+              <div className="flex flex-col items-center justify-center py-10 gap-4">
+                <p className="text-gray-500 italic text-center">No matches found in your library.</p>
+                <button 
+                  onClick={() => setIsIdentifying(true)}
+                  className="px-6 py-2 rounded-full border border-primary/30 text-primary text-sm font-bold flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined">mic</span>
+                  Identify this track
+                </button>
+              </div>
             )}
           </div>
         ) : (

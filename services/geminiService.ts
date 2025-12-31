@@ -37,3 +37,42 @@ export const searchMusicInsights = async (query: string) => {
 
   return response.text;
 };
+
+export const identifyAudio = async (base64Audio: string, mimeType: string) => {
+  if (!API_KEY) throw new Error("API Key not found");
+
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [
+      {
+        parts: [
+          {
+            inlineData: {
+              data: base64Audio,
+              mimeType: mimeType
+            }
+          },
+          {
+            text: "Identify the song in this audio recording. Provide the title and artist. If you cannot identify it, return 'Unknown' for both fields. Return as JSON."
+          }
+        ]
+      }
+    ],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          artist: { type: Type.STRING },
+          genre: { type: Type.STRING },
+          confidence: { type: Type.NUMBER, description: "Confidence score from 0 to 1" }
+        },
+        required: ["title", "artist"]
+      }
+    }
+  });
+
+  return JSON.parse(response.text);
+};
