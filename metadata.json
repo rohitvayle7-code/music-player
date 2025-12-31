@@ -1,0 +1,7 @@
+{
+  "name": "NeonFlow Music",
+  "description": "A high-end, neon-themed music library and player with AI-powered playlist generation and intelligent search.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
